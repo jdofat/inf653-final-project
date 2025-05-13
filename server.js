@@ -1,34 +1,39 @@
-require('dotenv').config();
 
 const express = require('express');
-const connectDB = require('./config/dbConn');
+require('dotenv').config();
 const mongoose = require('mongoose');
+const path = require('path');
+const connectDB = require('./config/dbConn');
+const statesRoutes = require('./routes/states');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const cors = require('cors');
+app.use(cors());
 
 connectDB();
-
+console.log("ccc");
 
 app.use(express.json());
+console.log("ddd");
+app.use(express.static('public'));
 
 
-const statesRoutes = require('./routes/states');
 app.use('/states', statesRoutes);
+console.log("f");
+
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
 
 
-app.all('*', (req, res) => {
-  if (req.accepts('html')) {
-    res.status(404).send('<h1>404 Not Found</h1>');
-  } else if (req.accepts('json')) {
-    res.status(404).json({ error: '404 Not Found' });
-  } else {
-    res.status(404).type('txt').send('404 Not Found');
-  }
+app.all('*path', (req, res) => { console.log("abc");
+  res.status(404).sendFile(path.join(__dirname, 'public', '404.html'));
 });
 
 mongoose.connection.once('open', () => {
   console.log('Connected to MongoDB');
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
+
